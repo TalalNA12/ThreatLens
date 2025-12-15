@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core Palette */
+  --background: #030712; /* Deepest Void Blue */
+  --foreground: #f8fafc;
+  
+  /* ThreatLens Identity Colors */
+  --neon-cyan: #06b6d4;
+  --neon-purple: #7c3aed;
+  --alert-red: #ef4444;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(10, 10, 10, 0.6);
 }
 
 @theme inline {
@@ -10,17 +18,137 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Extend colors for Tailwind classes */
+  --color-cyan-glow: var(--neon-cyan);
+  --color-purple-glow: var(--neon-purple);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* --- THE CYBER FOUNDATION --- */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  
+  /* The "Neural Grid" Background */
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 60%);
+  background-size: 50px 50px, 50px 50px, 100% 100%;
+  background-attachment: fixed; /* Parallax feel */
+}
+
+/* The "Lens" Vignette overlay */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 30%, #030712 100%);
+  pointer-events: none;
+  z-index: 50; /* Sits above background, below content */
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f19; 
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-cyan); 
+}
+
+/* --- UTILITY CLASSES --- */
+
+/* Glass Panel (Cards, Sidebar) */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* The Navigation Link - Upgraded */
+.nav-link {
+  @apply inline-flex items-center justify-center
+    text-sm font-medium tracking-widest uppercase
+    px-6 py-2
+    relative overflow-hidden
+    rounded-sm /* Sharper corners for tech feel */
+    text-slate-400
+    border border-transparent
+    transition-all duration-300;
+}
+
+.nav-link:hover {
+  @apply text-cyan-400 border-cyan-500/30 bg-cyan-950/20 shadow-[0_0_15px_rgba(6,182,212,0.3)];
+}
+
+/* Text Glow Utility */
+.text-glow {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.6);
+}
+
+/* --- ANIMATIONS --- */
+
+/* 1. The Eye Movement (Chaotic Scanning) */
+@keyframes eye-scan {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-20px, -10px); } /* Look Top-Left */
+  15%  { transform: translate(-20px, -10px); } /* Pause */
+  30%  { transform: translate(20px, 5px); }    /* Look Bottom-Right */
+  45%  { transform: translate(0, 15px); }      /* Look Down */
+  60%  { transform: translate(-15px, 5px); }   /* Look Left */
+  75%  { transform: translate(15px, -15px); }  /* Look Top-Right */
+  90%  { transform: translate(0, 0); }         /* Return Center */
+  100% { transform: translate(0, 0); }
+}
+
+.animate-eye-scan {
+  animation: eye-scan 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* 2. The Laser Sweep Line */
+@keyframes scan-sweep {
+  0% { left: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+.animate-scan-sweep {
+  animation: scan-sweep 2s linear infinite;
+}
+
+/* 3. Optimized Page Load (Faster, no blur lag) */
+@keyframes openEye {
+  0% { 
+    clip-path: inset(50% 0 50% 0); 
+    opacity: 0; 
+  }
+  100% { 
+    clip-path: inset(0 0 0 0); 
+    opacity: 1; 
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.animate-eye-open {
+  /* Reduced time to 1s for snappier feel */
+  animation: openEye 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
 }
