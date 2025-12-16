@@ -1,193 +1,156 @@
 "use client";
-
-import { useState } from "react";
-import Shell from "@/app/components/Layout/Shell";
-
-// Initial mock findings
-const initialFindings = [
-  {
-    id: 1,
-    title: "SQL Injection",
-    category: "Web",
-    severity: "Critical",
-    date: "2025-12-01",
-  },
-  {
-    id: 2,
-    title: "Weak Password Policy",
-    category: "Auth",
-    severity: "High",
-    date: "2025-11-25",
-  },
-  {
-    id: 3,
-    title: "Open S3 Bucket",
-    category: "Cloud",
-    severity: "Medium",
-    date: "2025-11-20",
-  },
-];
+import { useState, useEffect } from "react";
+// Added FaRobot for the AI section
+import { FaBug, FaExclamationTriangle, FaCheckCircle, FaRobot } from "react-icons/fa";
 
 export default function FindingsPage() {
-  const [findings, setFindings] = useState(initialFindings);
+  const [findings, setFindings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Local state for the form inputs to handle the "Cyber" UI
-  const [formData, setFormData] = useState({
-    title: "",
-    category: "",
-    severity: "Low",
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.title) return;
-
-    const newFinding = {
-      id: Date.now(),
-      title: formData.title,
-      category: formData.category,
-      severity: formData.severity,
-      date: new Date().toISOString().split("T")[0],
+  useEffect(() => {
+    const fetchFindings = async () => {
+      try {
+        const res = await fetch("/api/findings");
+        const data = await res.json();
+        setFindings(data);
+      } catch (err) {
+        console.error("Failed to load findings", err);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchFindings();
+  }, []);
 
-    // Add new finding to the TOP of the list
-    setFindings((prev) => [newFinding, ...prev]);
-    
-    // Reset Form
-    setFormData({ title: "", category: "", severity: "Low" });
+  // --- 🤖 HEURISTIC AI ENGINE (The "Expert System") ---
+  const getAIRecommendation = (severity) => {
+    // 1. Critical Templates
+    const criticalAdvice = [
+      "URGENT: Isolate asset immediately. Remote Code Execution (RCE) vector probable.",
+      "CRITICAL: APT (Advanced Persistent Threat) indicators detected. Initiate Incident Response.",
+      "ALERT: High-value target exposed. Recommended Action: Sever network connection immediately."
+    ];
+
+    // 2. High Templates
+    const highAdvice = [
+      "High Priority: Patching required within 24 hours. Exploit available in public DB.",
+      "Warning: Service allows unauthenticated access. Firewall rules update recommended.",
+      "Security Gap: Standard compliance violation detected. Close port if unused."
+    ];
+
+    // 3. Medium Templates
+    const mediumAdvice = [
+      "Advisory: Unnecessary service exposure. Reduce attack surface by restricting IP ranges.",
+      "Observation: Non-standard port usage. Monitor logs for brute-force attempts.",
+      "Optimization: Service detected on public interface. Ensure SSL/TLS is enforced."
+    ];
+
+    // 4. Low Templates
+    const lowAdvice = [
+      "Info: Service operating within normal parameters. No immediate action.",
+      "Status: Routine traffic. Continue standard monitoring protocols.",
+      "Log: Asset reachable but secured. Low probability of exploitation."
+    ];
+
+    // Pick a random message based on severity to simulate dynamic analysis
+    if (severity === "Critical") return criticalAdvice[Math.floor(Math.random() * criticalAdvice.length)];
+    if (severity === "High") return highAdvice[Math.floor(Math.random() * highAdvice.length)];
+    if (severity === "Medium") return mediumAdvice[Math.floor(Math.random() * mediumAdvice.length)];
+    return lowAdvice[Math.floor(Math.random() * lowAdvice.length)];
   };
 
-  return (
-    <Shell>
-      <div className="space-y-10 mt-4">
-        
-        {/* --- HEADER --- */}
-        <div className="border-b border-white/5 pb-4">
-           <h1 className="text-4xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">
-              THREAT <span className="text-red-500 text-glow">FINDINGS</span>
-            </h1>
-            <p className="text-slate-400 font-mono text-sm tracking-widest uppercase mt-2">
-              / Anomalies Detected: <span className="text-red-500">{findings.length}</span>
-            </p>
-        </div>
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-mono text-cyan-400 animate-pulse">SCANNING_VULNERABILITY_DB...</h2>
+      </div>
+    );
+  }
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          
-          {/* --- LEFT COLUMN: Input Console (The Form) --- */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 rounded-xl border border-slate-800 bg-slate-950/80 backdrop-blur-md p-6 shadow-lg">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <h2 className="text-sm font-mono uppercase tracking-widest text-slate-300">Log Manual Threat</h2>
-              </div>
+  return (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold font-mono text-cyan-400 mb-8 flex items-center">
+        <FaBug className="mr-3" /> VULNERABILITY_REPORT
+      </h1>
+
+      {findings.length === 0 ? (
+        <div className="text-center text-gray-500 mt-20 p-10 border border-gray-800 rounded">
+          <FaCheckCircle className="text-4xl text-green-500 mx-auto mb-4" />
+          <p className="text-xl">System Clean.</p>
+          <p>No vulnerabilities detected in current scan cycle.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {findings.map((finding) => (
+            <div key={finding._id} className="bg-gray-900 border border-gray-800 p-6 rounded-lg hover:border-cyan-500/50 transition-all group shadow-lg">
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Title Input */}
-                <div>
-                   <label className="block text-xs text-slate-500 font-mono mb-1 uppercase">Vulnerability Title</label>
-                   <input 
-                      type="text" 
-                      value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
-                      className="w-full bg-black/40 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-red-500 focus:outline-none transition-colors" 
-                      placeholder="e.g. SQL Injection" 
-                   />
+              {/* Header Section */}
+              <div className="flex justify-between items-start">
+                <div className="flex items-start gap-4">
+                  {/* Icon on the left */}
+                  <div className={`mt-1 p-3 rounded-lg ${
+                    finding.severity === 'Critical' ? 'bg-red-900/20 text-red-500' :
+                    finding.severity === 'High' ? 'bg-orange-900/20 text-orange-500' :
+                    finding.severity === 'Medium' ? 'bg-yellow-900/20 text-yellow-500' :
+                    'bg-blue-900/20 text-blue-500'
+                  }`}>
+                    <FaExclamationTriangle size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">
+                      {finding.title}
+                    </h3>
+                    
+                    {/* TARGET NAME BADGE */}
+                    <div className="flex items-center gap-2 mt-2 mb-2">
+                        <span className="text-xs font-mono text-cyan-300 bg-cyan-950/50 px-2 py-1 rounded border border-cyan-900/50">
+                        TARGET: {finding.assetId?.name || "Unknown"}
+                        </span>
+                        <span className="text-xs font-mono text-gray-500">
+                        ({finding.assetId?.value || "IP N/A"})
+                        </span>
+                    </div>
+                  </div>
                 </div>
                 
-                {/* Category Input */}
-                 <div>
-                   <label className="block text-xs text-slate-500 font-mono mb-1 uppercase">Category</label>
-                   <input 
-                      type="text" 
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full bg-black/40 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-red-500 focus:outline-none transition-colors" 
-                      placeholder="e.g. Network, Auth..." 
-                   />
-                </div>
+                {/* SEVERITY BADGE */}
+                <span className={`px-4 py-1.5 rounded text-xs font-bold uppercase border tracking-widest ${
+                   finding.severity === 'Critical' ? 'bg-red-950/40 text-red-500 border-red-900' :
+                   finding.severity === 'High' ? 'bg-orange-950/40 text-orange-500 border-orange-900' :
+                   finding.severity === 'Medium' ? 'bg-yellow-950/40 text-yellow-500 border-yellow-900' :
+                   'bg-blue-950/40 text-blue-500 border-blue-900'
+                }`}>
+                  {finding.severity}
+                </span>
+              </div>
 
-                {/* Severity Select */}
-                 <div>
-                   <label className="block text-xs text-slate-500 font-mono mb-1 uppercase">Severity</label>
-                   <select 
-                      value={formData.severity}
-                      onChange={(e) => setFormData({...formData, severity: e.target.value})}
-                      className="w-full bg-black/40 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-red-500 focus:outline-none transition-colors appearance-none"
-                   >
-                     <option>Low</option>
-                     <option>Medium</option>
-                     <option>High</option>
-                     <option>Critical</option>
-                   </select>
-                </div>
+              {/* Description Text */}
+              <p className="text-gray-400 text-sm mt-2 mb-4 pl-0 md:pl-[72px]">{finding.description}</p>
 
-                {/* Submit Button */}
-                <button 
-                  type="submit"
-                  className="w-full mt-2 bg-red-900/20 border border-red-500/50 text-red-400 py-2 rounded font-mono text-xs uppercase hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all"
-                >
-                  &gt;&gt; Submit Report
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* --- RIGHT COLUMN: The Data Stream (The Table) --- */}
-          <div className="lg:col-span-2">
-            <div className="rounded-xl border border-slate-800 bg-slate-950/40 backdrop-blur-md overflow-hidden min-h-[500px]">
-              <div className="px-6 py-4 bg-slate-900/50 border-b border-slate-800 flex justify-between items-center">
-                <span className="text-xs font-mono uppercase text-slate-500">Live Intel Feed</span>
-                <div className="flex gap-1">
-                   <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                   <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                   <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+              {/* 🤖 THE NEW AI ANALYSIS BOX */}
+              <div className="ml-0 md:ml-[72px] bg-slate-950 border border-slate-800 rounded p-4 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-cyan-500"></div>
+                <div className="flex items-start gap-3">
+                  <FaRobot className="text-purple-400 mt-1 min-w-[16px]" size={16} />
+                  <div>
+                    <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">AI Threat Assessment</h4>
+                    <p className="text-xs font-mono text-gray-300 leading-relaxed">
+                      {getAIRecommendation(finding.severity)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Table Data */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-left">
-                   <tbody className="divide-y divide-slate-800/50">
-                    {findings.length === 0 ? (
-                        <tr>
-                            <td className="p-8 text-center text-slate-500 font-mono text-sm">
-                                No active threats detected. System secure.
-                            </td>
-                        </tr>
-                    ) : (
-                        findings.map((finding) => (
-                        <tr key={finding.id} className="group hover:bg-slate-800/30 transition-all">
-                            <td className="p-6">
-                            <div className="flex justify-between items-start mb-2">
-                                <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded border ${
-                                finding.severity === 'Critical' ? 'border-red-500/50 text-red-400 bg-red-950/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]' :
-                                finding.severity === 'High' ? 'border-orange-500/50 text-orange-400 bg-orange-950/30' :
-                                finding.severity === 'Medium' ? 'border-yellow-500/50 text-yellow-400 bg-yellow-950/30' :
-                                'border-emerald-500/50 text-emerald-400 bg-emerald-950/30'
-                                }`}>
-                                {finding.severity}
-                                </span>
-                                <span className="font-mono text-xs text-slate-500">{finding.date}</span>
-                            </div>
-                            <h3 className="text-slate-200 font-medium group-hover:text-white transition-colors text-lg">
-                                {finding.title}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-2">
-                                <span className="text-xs text-slate-500 font-mono uppercase">Category:</span>
-                                <span className="text-xs text-slate-400">{finding.category || 'General'}</span>
-                            </div>
-                            </td>
-                        </tr>
-                        ))
-                    )}
-                   </tbody>
-                </table>
+              {/* Footer Meta Data */}
+              <div className="mt-4 pl-0 md:pl-[72px] flex gap-6 text-xs font-mono text-gray-600">
+                <span className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> STATUS: {finding.status}</span>
+                <span>DETECTED: {new Date(finding.detectedAt).toLocaleDateString()}</span>
               </div>
-            </div>
-          </div>
 
+            </div>
+          ))}
         </div>
-      </div>
-    </Shell>
+      )}
+    </div>
   );
 }

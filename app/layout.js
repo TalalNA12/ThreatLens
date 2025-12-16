@@ -1,6 +1,7 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from './components/Layout/Navbar';
+import Shell from './components/Layout/Shell'; // <--- Import your Shell
 import { AssetProvider } from "./context/AssetContext";
 
 const sans = Inter({
@@ -23,9 +24,13 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body className="min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
         <Navbar/>
-        <main className="flex-1 relative z-10">
+        {/* Main handles vertical growth (flex-1) */}
+        <main className="flex-1">
           <AssetProvider>
-          {children}
+            {/* Shell handles the width, padding, and z-index */}
+            <Shell>
+              {children}
+            </Shell>
           </AssetProvider>
         </main>
       </body>
